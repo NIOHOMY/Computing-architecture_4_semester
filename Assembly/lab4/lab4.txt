@@ -1,0 +1,35 @@
+.model small
+.data        
+cwd
+a dw 6,-2,-1,3,-4,7,2
+len equ ($-a)/2
+c dw -3
+d dw -1
+result dw 1
+.code
+start:    
+mov ax, @data
+mov ds,ax
+lea si, a
+mov cx, len
+_1:
+lodsw 
+cmp ax,0
+jns _no     
+cmp c,0
+jns _no
+cmp ax, c
+jb _no
+cmp ax, d
+ja _mul
+mul result
+mov result, ax
+_mul:
+cmp d ,0
+jl _no
+mul result
+mov result, ax
+_no: 
+loop _1
+.exit
+end start

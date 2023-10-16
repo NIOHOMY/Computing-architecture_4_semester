@@ -1,0 +1,108 @@
+org 100h
+.model tiny
+.data
+n dw 40
+A dd 1, -1, 1, -20, 5, 6, 1, 8, -2, -10
+c dd -10
+d dd -20
+result dw 1 
+sign dw 1 
+MR dw 0
+prom db 0
+.code 
+cld
+lea si, A
+mov di,n
+mov cx,di
+jcxz @exit
+mov cx, n
+cikl: 
+mov ax,WORD PTR[si]
+cmp WORD PTR[si],0
+jns no   
+mov dx, [c]
+cmp c,0
+jns no   
+
+cmp WORD PTR[si],dx
+jnae no
+
+mov dx,[c+2]
+cmp WORD PTR[si+2], dx
+jnae no  
+mov dx, [d]
+cmp WORD PTR[si],dx 
+ja _mul
+;jnbe no
+mov dx,[d+2]
+cmp WORD PTR[si+2], dx 
+ja _mul
+;jnbe no
+mov ax,WORD PTR[si]
+imul [result]
+mov [result], ax  
+_mul:
+cmp d ,0
+jl no
+mul result
+mov result, ax
+no:
+cmp bx, n
+je @exit
+inc si
+inc si
+inc si
+inc si
+sub cx,3  
+loop cikl  
+cmp [result], 0
+jl pushMinus
+goback:
+jmp split 
+print:
+cmp [sign], -1
+jne printDigits
+mov ah, 2
+mov dx, '-'
+int 21h 
+
+printDigits:   
+    pop dx
+    mov ah, 2
+    int 21h 
+    loop printDigits
+    ret
+
+split:
+mov ax, [result]
+mov bl, 10
+idiv bl
+mov [prom], ah
+cbw
+mov [result], ax
+
+mov ax, 0
+mov al, [prom]
+add ax, '0'
+push ax
+
+mov ax, [MR]
+inc ax
+mov [MR], ax
+
+cmp [result], 0
+mov cx, [MR]
+je print
+
+jmp split  
+
+pushMinus:
+    mov [sign], -1
+    mov ax, [result]
+    mov bx, -1
+    imul bx
+    mov [result], ax
+    jmp goback
+
+@exit:
+ret
